@@ -27,16 +27,30 @@ export function useValidationTooltip() {
   }
   // Para validaciones manuales (no HTML5 required/type) que sí tienen un campo
   // concreto al que apuntar - ej. el selector de tipo de PQRS, o "las contraseñas
-  // no coinciden" en Registro. Espera a que termine el scroll suave antes de medir
-  // la posición del tooltip, si no, apuntaría a donde estaba el campo antes de
-  // moverse la pantalla.
+  // no coinciden" en Registro - y para el `invalid` nativo (App.vue). Espera a que
+  // termine el scroll suave antes de medir la posición del tooltip, si no, apuntaría
+  // a donde estaba el campo antes de moverse la pantalla. Un tiempo fijo no sirve:
+  // el scroll dura más entre más lejos esté el campo (desde el botón de un formulario
+  // largo pasa de medio segundo), así que se revisa cuadro a cuadro hasta que el
+  // campo deja de moverse (con tope de ~2 s por si acaso).
   function marcarError(el, texto) {
     if (!el) return
     el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    setTimeout(() => {
-      mostrarTooltip(el, texto)
-      el.focus({ preventScroll: true })
-    }, 350)
+    let ultimoTop = null
+    let cuadrosQuieto = 0
+    let cuadros = 0
+    function revisar() {
+      const top = el.getBoundingClientRect().top
+      cuadrosQuieto = top === ultimoTop ? cuadrosQuieto + 1 : 0
+      ultimoTop = top
+      if (cuadrosQuieto >= 4 || ++cuadros > 120) {
+        mostrarTooltip(el, texto)
+        el.focus({ preventScroll: true })
+      } else {
+        requestAnimationFrame(revisar)
+      }
+    }
+    requestAnimationFrame(revisar)
   }
   return { tooltip, mostrarTooltip, ocultarTooltip, marcarError }
 }
