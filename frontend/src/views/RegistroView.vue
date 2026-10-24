@@ -104,6 +104,13 @@ watch(() => form.value.departamento, () => {
   }
 })
 
+// Número de documento: solo dígitos. Letras, puntos, guiones o espacios se quitan apenas se
+// escriben o se pegan, así nunca llegan al formulario ni a la BD.
+watch(() => form.value.numeroIdentificacion, (valor) => {
+  const soloDigitos = valor.replace(/\D/g, '')
+  if (soloDigitos !== valor) form.value.numeroIdentificacion = soloDigitos
+})
+
 // Duplicados en tiempo real: apenas escriben un número de identificación, teléfono o correo que ya
 // existe, se los marcamos ahí mismo junto al campo — no hay que esperar a enviar el formulario para
 // enterarse. Antes comparaba contra una lista fija de usuarios de prueba (MockData); ahora

@@ -48,7 +48,7 @@ function scrollToTop() {
 // burbujea (hay que escucharlo en captura sobre document), y preventDefault() apaga el globo
 // nativo pero el navegador sigue bloqueando el submit igual - por eso no hace falta duplicar
 // la validación required/type=email/min/etc. que cada formulario ya declara en su HTML.
-const { mostrarTooltip, ocultarTooltip } = useValidationTooltip()
+const { ocultarTooltip, marcarError } = useValidationTooltip()
 function mensajeValidacion(el) {
   const v = el.validity
   if (v.valueMissing) return 'Completa este campo.'
@@ -61,8 +61,10 @@ function mensajeValidacion(el) {
   return el.validationMessage || 'Revisa este campo.'
 }
 // Al enviar un formulario con varios campos inválidos, el navegador dispara `invalid` en CADA
-// uno (en el mismo tick), pero nativamente solo enfoca/reporta el primero - sin este freno,
-// el último evento pisaría al primero y el tooltip terminaría apuntando al campo equivocado.
+// uno, de arriba hacia abajo, pero nativamente solo enfoca/reporta el primero - sin este freno,
+// el último evento pisaría al primero y el tooltip terminaría en el último campo vacío. El freno
+// se suelta con setTimeout y no con queueMicrotask: el navegador corre las microtareas entre un
+// `invalid` y el siguiente, así que con microtarea se soltaba antes de tiempo y ganaba el último.
 let procesandoLoteInvalido = false
 function onCampoInvalido(e) {
   const el = e.target
@@ -70,9 +72,10 @@ function onCampoInvalido(e) {
   e.preventDefault()
   if (procesandoLoteInvalido) return
   procesandoLoteInvalido = true
-  queueMicrotask(() => { procesandoLoteInvalido = false })
-  mostrarTooltip(el, mensajeValidacion(el))
-  el.focus()
+  setTimeout(() => { procesandoLoteInvalido = false })
+  // marcarError lleva el campo a la vista y mide el tooltip cuando ya terminó el scroll - medirlo
+  // antes lo dejaba donde estaba el campo (fuera de pantalla si el botón de enviar está abajo).
+  marcarError(el, mensajeValidacion(el))
   el.addEventListener('input', ocultarTooltip, { once: true })
 }
 
