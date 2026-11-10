@@ -5,7 +5,7 @@
 // useReporteExport.js) y Word arma un documento de datos editable (docx), sin la gráfica.
 import { ref, computed } from 'vue'
 import { useCatalogStore } from '../../stores/catalog'
-import { useVentasStore } from '../../stores/ventas'
+import { useVentasStore, cuentaComoVenta } from '../../stores/ventas'
 import { formatCOP, formatDate, fechaLocalISO } from '../../composables/useFormat'
 import { useReporteExport } from '../../composables/useReporteExport'
 import { useToast } from '../../composables/useToast'
@@ -72,7 +72,8 @@ function enRango(fechaStr) {
 }
 
 // ── Ventas y detalle filtrados por el rango activo ────────────
-const ventasFiltradas = computed(() => ventasStore.ventas.filter((v) => enRango(v.fecha)))
+// Solo ventas efectivas: los pedidos cancelados o devueltos no suman dinero, pedidos ni unidades.
+const ventasFiltradas = computed(() => ventasStore.ventas.filter((v) => cuentaComoVenta(v) && enRango(v.fecha)))
 const idsVentasFiltradas = computed(() => new Set(ventasFiltradas.value.map((v) => v.id_venta)))
 const detalleFiltrado = computed(() => ventasStore.detalleVentas.filter((d) => idsVentasFiltradas.value.has(d.id_venta)))
 

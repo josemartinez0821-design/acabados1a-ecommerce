@@ -6,7 +6,7 @@
 // Productos/Inventario/Cotizaciones.
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useCatalogStore } from '../../stores/catalog'
-import { useVentasStore, ESTADOS_VENTA, labelEstadoVenta } from '../../stores/ventas'
+import { useVentasStore, ESTADOS_VENTA, labelEstadoVenta, cuentaComoVenta } from '../../stores/ventas'
 import { useAuthStore } from '../../stores/auth'
 import { useToast } from '../../composables/useToast'
 import { formatCOP, formatDateTime, extraerDireccionEntrega, extraerNotaClienteVenta, fechaLocalISO } from '../../composables/useFormat'
@@ -60,7 +60,9 @@ function puedeCancelarODevolver(venta) {
 }
 
 const hoyStr = fechaLocalISO()
-const ventasHoy = computed(() => ventasStore.ventas.filter((v) => v.fecha.startsWith(hoyStr)))
+// Ingresos: solo ventas efectivas (los cancelados/devueltos no suman). Los conteos por estado de
+// abajo sí usan la lista completa.
+const ventasHoy = computed(() => ventasStore.ventas.filter((v) => cuentaComoVenta(v) && v.fecha.startsWith(hoyStr)))
 const totalVentasHoy = computed(() => ventasHoy.value.reduce((s, v) => s + v.total, 0))
 const totalEnProceso = computed(() => ventasStore.ventas.filter(esPedidoActivo).length)
 const totalEntregados = computed(() => ventasStore.ventas.filter((v) => v.estado === 'entregado').length)
@@ -85,10 +87,10 @@ const ultimos30Dias = computed(() => {
 })
 const ventasDelPeriodo = computed(() => {
   const desde = ultimos30Dias.value[0]
-  return ventasStore.ventas.filter((v) => v.fecha.slice(0, 10) >= desde)
+  return ventasStore.ventas.filter((v) => cuentaComoVenta(v) && v.fecha.slice(0, 10) >= desde)
 })
 const totalesPorDia = computed(() =>
-  ultimos30Dias.value.map((dia) => ventasStore.ventas.filter((v) => v.fecha.startsWith(dia)).reduce((s, v) => s + v.total, 0))
+  ultimos30Dias.value.map((dia) => ventasDelPeriodo.value.filter((v) => v.fecha.startsWith(dia)).reduce((s, v) => s + v.total, 0))
 )
 const ingresosTotales30d = computed(() => totalesPorDia.value.reduce((s, v) => s + v, 0))
 const promedioDiario30d = computed(() => Math.round(ingresosTotales30d.value / 30))
