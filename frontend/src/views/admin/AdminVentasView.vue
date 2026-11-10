@@ -812,7 +812,8 @@ async function guardarVentaManual() {
               <div style="display:flex;gap:8px;">
                 <select v-model="itemSeleccionado.id_producto" class="form-control" style="flex:2;">
                   <option value="" disabled>Selecciona un producto</option>
-                  <option v-for="p in catalog.productos" :key="p.id_producto" :value="p.id_producto">{{ p.nombre }} — {{ formatCOP(p.precio_venta) }}</option>
+                  <!-- Solo productos activos: uno eliminado (borrado lógico) ya no se puede vender (H1). -->
+                  <option v-for="p in catalog.productos.filter((x) => x.activo !== false)" :key="p.id_producto" :value="p.id_producto">{{ p.nombre }} — {{ formatCOP(p.precio_venta) }}</option>
                 </select>
                 <input v-model.number="itemSeleccionado.cantidad" type="number" min="1" class="form-control" style="flex:1;" />
                 <button type="button" class="btn btn-outline-red btn-sm" @click="agregarItemVenta"><i class="ri-add-line"></i></button>
