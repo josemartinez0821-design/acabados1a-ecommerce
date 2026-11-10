@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 // Cada prueba hace lo mismo que haría la pantalla del cliente o del administrador, llamando a los
 // mismos servicios que usan los controladores. Corre contra la BD real (necesita MariaDB), igual
 // que VentaServiceCrearRegresionTest, y @Transactional revierte todo al terminar: no deja
-// cotizaciones, PQRS, ventas, reseñas, productos ni promociones de prueba. EmailService va
+// cotizaciones, PQRS, ventas, reseñas, productos, promociones ni usuarios de prueba. EmailService va
 // simulado: se comprueba que se pidió cada correo, sin mandarlo de verdad.
 @SpringBootTest
 @Transactional
@@ -40,6 +40,7 @@ class FlujoDemoSustentacionTest {
     @Autowired ProductoService productoService;
     @Autowired MovimientoInventarioService movimientoInventarioService;
     @Autowired PromocionService promocionService;
+    @Autowired AuthService authService;
     @Autowired UsuarioRepository usuarioRepository;
     @Autowired ProductoRepository productoRepository;
     @Autowired ServicioRepository servicioRepository;
@@ -320,6 +321,79 @@ class FlujoDemoSustentacionTest {
 
         promocionService.eliminar(creada.getIdPromocion());
         assertFalse(promocionRepository.existsById(creada.getIdPromocion()));
+    }
+
+    // Registro en 2 pasos: la cuenta nace sin verificar y no puede iniciar sesión hasta escribir
+    // el código que llega por correo (aquí se toma del correo simulado).
+    @Test
+    void registro_codigoPorCorreo_verificacion_yLogin() {
+        RegistroRequest registro = registroDePrueba();
+        Usuario nuevo = authService.registrar(registro);
+        assertEquals(2, nuevo.getRol().getIdRol());
+        assertFalse(nuevo.getEmailVerificado());
+
+        ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);
+        verify(emailService).enviarCodigoVerificacion(eq(registro.getEmail()), codigo.capture());
+        assertTrue(codigo.getValue().matches("\\d{6}"));
+        assertNotEquals(codigo.getValue(), nuevo.getCodigoVerificacion(), "en la BD queda el HMAC, nunca el código en claro");
+
+        IllegalArgumentException sinVerificar = assertThrows(IllegalArgumentException.class, () -> authService.login(login(registro.getEmail(), registro.getPassword())));
+        assertEquals(AuthService.MSG_CUENTA_NO_VERIFICADA, sinVerificar.getMessage());
+
+        authService.verificarEmail(registro.getEmail(), codigo.getValue());
+        assertEquals(nuevo.getIdUsuario(), authService.login(login(registro.getEmail(), registro.getPassword())).getIdUsuario());
+
+        IllegalArgumentException repetido = assertThrows(IllegalArgumentException.class, () -> authService.registrar(registroDePrueba()));
+        assertEquals("Ya existe una cuenta registrada con ese correo.", repetido.getMessage());
+    }
+
+    // «¿Olvidaste tu contraseña?»: código por correo → código validado → contraseña nueva; la vieja deja de servir.
+    @Test
+    void recuperarPassword_conCodigo_cambiaLaContrasena() {
+        RegistroRequest registro = registroDePrueba();
+        authService.registrar(registro);
+        ArgumentCaptor<String> codigoRegistro = ArgumentCaptor.forClass(String.class);
+        verify(emailService).enviarCodigoVerificacion(eq(registro.getEmail()), codigoRegistro.capture());
+        authService.verificarEmail(registro.getEmail(), codigoRegistro.getValue());
+
+        authService.solicitarRecuperacion(registro.getEmail());
+        ArgumentCaptor<String> codigo = ArgumentCaptor.forClass(String.class);
+        verify(emailService).enviarCodigoRecuperacion(eq(registro.getEmail()), codigo.capture());
+
+        IllegalArgumentException malo = assertThrows(IllegalArgumentException.class,
+            () -> authService.verificarCodigoRecuperacion(registro.getEmail(), codigo.getValue().equals("000000") ? "111111" : "000000"));
+        assertNotNull(malo.getMessage());
+        authService.verificarCodigoRecuperacion(registro.getEmail(), codigo.getValue());
+
+        NuevaPasswordRequest nueva = new NuevaPasswordRequest();
+        nueva.setEmail(registro.getEmail());
+        nueva.setCodigo(codigo.getValue());
+        nueva.setPassword("OtraClaveDePrueba#2026");
+        authService.nuevaPassword(nueva);
+
+        assertNotNull(authService.login(login(registro.getEmail(), "OtraClaveDePrueba#2026")));
+        assertThrows(IllegalArgumentException.class, () -> authService.login(login(registro.getEmail(), registro.getPassword())));
+    }
+
+    private RegistroRequest registroDePrueba() {
+        RegistroRequest r = new RegistroRequest();
+        r.setNombre("Cliente");
+        r.setApellido("De Prueba");
+        r.setTipoIdentificacion("CC");
+        r.setNumeroIdentificacion("9900110022");
+        r.setEmail("cliente.prueba.flujo@example.test");
+        r.setPassword("ClaveDePrueba#2026");
+        r.setTelefono("3009990011");
+        r.setDepartamento("Huila");
+        r.setCiudad("Tesalia");
+        return r;
+    }
+
+    private LoginRequest login(String email, String password) {
+        LoginRequest l = new LoginRequest();
+        l.setEmail(email);
+        l.setPassword(password);
+        return l;
     }
 
     private Usuario usuarioConRol(int idRol) {
