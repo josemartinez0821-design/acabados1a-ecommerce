@@ -9,7 +9,7 @@ import { useCotizacionesStore, unidadServicio, tarifaServicio, ADVERTENCIA_MODO,
 import { useCartStore } from '../stores/cart'
 import { useVentasStore } from '../stores/ventas'
 import { useToast } from '../composables/useToast'
-import { formatCOP, formatDate, empacarFechaDeseada, extraerFechaDeseada, extraerNotaCliente } from '../composables/useFormat'
+import { formatCOP, formatDate, empacarFechaDeseada, extraerFechaDeseada, extraerNotaCliente, fechaLocalISO } from '../composables/useFormat'
 import { DEPARTAMENTOS, MUNICIPIOS_POR_DEPARTAMENTO } from '../data/colombia'
 import CotizarLoginModal from '../components/service/CotizarLoginModal.vue'
 
@@ -888,7 +888,7 @@ async function enviarSolicitud() {
               <div class="cotiz-fecha-card-icon"><i class="ri-calendar-event-line"></i></div>
               <div class="cotiz-fecha-card-body">
                 <label for="fecha-deseada-servicio">¿Cuándo necesitas el servicio?</label>
-                <input id="fecha-deseada-servicio" v-model="fechaDeseada" type="date" class="form-control" :min="new Date().toISOString().slice(0, 10)" />
+                <input id="fecha-deseada-servicio" v-model="fechaDeseada" type="date" class="form-control" :min="fechaLocalISO()" />
               </div>
             </div>
 

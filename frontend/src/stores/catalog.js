@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { ServiciosEnriquecimiento } from '../data/serviciosEnriquecimiento'
 import api from '../services/api'
 import productoPlaceholder from '../assets/producto-placeholder.svg'
+import { fechaLocalISO } from '../composables/useFormat'
 
 // Las fotos de stock originales ya venían como URL completa (Unsplash) - pero las imágenes
 // subidas de verdad por el admin (ProductoService.subirImagen) guardan una ruta relativa del
@@ -252,7 +253,7 @@ export const useCatalogStore = defineStore('catalog', () => {
   // vencidas o programadas a futuro en el sitio público.
   function esPromoVigente(promo) {
     if (!promo.activo) return false
-    const hoy = new Date().toISOString().slice(0, 10)
+    const hoy = fechaLocalISO()
     if (promo.fecha_inicio && hoy < promo.fecha_inicio) return false
     if (promo.fecha_fin && hoy > promo.fecha_fin) return false
     return true

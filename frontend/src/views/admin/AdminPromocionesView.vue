@@ -5,7 +5,7 @@
 import { ref, computed, watch } from 'vue'
 import { useCatalogStore } from '../../stores/catalog'
 import { useToast } from '../../composables/useToast'
-import { formatCOP, formatDate } from '../../composables/useFormat'
+import { formatCOP, formatDate, fechaLocalISO } from '../../composables/useFormat'
 import PromocionFormModal from '../../components/admin/PromocionFormModal.vue'
 
 const catalog = useCatalogStore()
@@ -25,7 +25,7 @@ const TIPO_ICON = { descuento: 'ri-price-tag-3-line', combo: 'ri-gift-line', ser
 // ENUM real de la BD (solo `activo` sí).
 function estadoPromo(promo) {
   if (!promo.activo) return { label: 'Inactiva', clase: 'badge-gray' }
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = fechaLocalISO()
   if (promo.fecha_inicio && hoy < promo.fecha_inicio) return { label: 'Programada', clase: 'badge-blue' }
   if (promo.fecha_fin && hoy > promo.fecha_fin) return { label: 'Vencida', clase: 'badge-gray' }
   return { label: 'Vigente', clase: 'badge-green' }

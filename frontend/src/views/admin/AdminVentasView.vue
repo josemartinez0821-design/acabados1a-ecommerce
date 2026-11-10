@@ -9,7 +9,7 @@ import { useCatalogStore } from '../../stores/catalog'
 import { useVentasStore, ESTADOS_VENTA, labelEstadoVenta } from '../../stores/ventas'
 import { useAuthStore } from '../../stores/auth'
 import { useToast } from '../../composables/useToast'
-import { formatCOP, formatDateTime, extraerDireccionEntrega, extraerNotaClienteVenta } from '../../composables/useFormat'
+import { formatCOP, formatDateTime, extraerDireccionEntrega, extraerNotaClienteVenta, fechaLocalISO } from '../../composables/useFormat'
 import api from '../../services/api'
 
 const catalog = useCatalogStore()
@@ -59,7 +59,7 @@ function puedeCancelarODevolver(venta) {
   return !['cancelado', 'devuelto'].includes(venta.estado)
 }
 
-const hoyStr = new Date().toISOString().slice(0, 10)
+const hoyStr = fechaLocalISO()
 const ventasHoy = computed(() => ventasStore.ventas.filter((v) => v.fecha.startsWith(hoyStr)))
 const totalVentasHoy = computed(() => ventasHoy.value.reduce((s, v) => s + v.total, 0))
 const totalEnProceso = computed(() => ventasStore.ventas.filter(esPedidoActivo).length)
@@ -79,7 +79,7 @@ const ultimos30Dias = computed(() => {
   for (let i = 29; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
-    dias.push(d.toISOString().slice(0, 10))
+    dias.push(fechaLocalISO(d))
   }
   return dias
 })
@@ -371,7 +371,7 @@ function exportarCSV() {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `pedidos_${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `pedidos_${fechaLocalISO()}.csv`
   a.click()
   URL.revokeObjectURL(url)
   showToast('Reporte CSV descargado.', 'success')

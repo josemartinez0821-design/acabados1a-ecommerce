@@ -7,7 +7,7 @@ import { useCatalogStore } from '../../stores/catalog'
 import { useVentasStore } from '../../stores/ventas'
 import { useCotizacionesStore } from '../../stores/cotizaciones'
 import { usePqrsStore } from '../../stores/pqrs'
-import { formatCOP, formatDate, formatDateTime } from '../../composables/useFormat'
+import { formatCOP, formatDate, formatDateTime, fechaLocalISO } from '../../composables/useFormat'
 
 const auth = useAuthStore()
 const catalog = useCatalogStore()
@@ -103,7 +103,7 @@ const diasVentana = computed(() => {
   for (let i = 29; i >= 0; i--) {
     const d = new Date(ref)
     d.setDate(d.getDate() - i)
-    dias.push(d.toISOString().slice(0, 10))
+    dias.push(fechaLocalISO(d))
   }
   return dias
 })
