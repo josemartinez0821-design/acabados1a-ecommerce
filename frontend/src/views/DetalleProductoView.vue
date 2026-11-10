@@ -198,6 +198,11 @@ function comprarAhora() {
   router.push('/checkout')
 }
 
+// Enlace de esta página para compartir (se recalcula al cambiar de variante, que cambia la URL).
+const urlProducto = computed(() => (producto.value ? `${window.location.origin}/productos/${producto.value.id_producto}` : window.location.href))
+const enlaceWhatsApp = computed(() => `https://wa.me/?text=${encodeURIComponent(`${producto.value?.nombre || ''} — ${urlProducto.value}`)}`)
+const enlaceFacebook = computed(() => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlProducto.value)}`)
+
 function copiarEnlace() {
   navigator.clipboard.writeText(window.location.href).then(() => showToast('Enlace copiado al portapapeles', 'success'))
 }
@@ -329,8 +334,10 @@ function toggleFaq(i) {
 
             <div class="detalle-share-bar">
               <span>Compartir:</span>
-              <a :href="`https://wa.me/?text=${encodeURIComponent(producto.nombre)}`" target="_blank" rel="noopener" class="detalle-share-btn whatsapp"><i class="ri-whatsapp-line"></i></a>
-              <a href="https://www.facebook.com/sharer/sharer.php" target="_blank" rel="noopener" class="detalle-share-btn facebook"><i class="ri-facebook-fill"></i></a>
+              <!-- Antes WhatsApp compartía solo el nombre y Facebook abría sharer.php sin ?u=, así que
+                   ninguno llevaba el enlace del producto. -->
+              <a :href="enlaceWhatsApp" target="_blank" rel="noopener" class="detalle-share-btn whatsapp" aria-label="Compartir por WhatsApp"><i class="ri-whatsapp-line"></i></a>
+              <a :href="enlaceFacebook" target="_blank" rel="noopener" class="detalle-share-btn facebook" aria-label="Compartir en Facebook"><i class="ri-facebook-fill"></i></a>
               <button type="button" class="btn btn-outline-red btn-sm" @click="copiarEnlace"><i class="ri-link"></i> Copiar enlace</button>
             </div>
           </div>
