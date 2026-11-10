@@ -21,8 +21,11 @@ const auth = useAuthStore()
 const router = useRouter()
 const { mostrarModalLogin: mostrarModalLoginCotizar, irACotizar, irALogin: irALoginCotizar } = useCotizarGate()
 
-const envio = computed(() => (cart.total >= 400000 || cart.total === 0 ? 0 : 8000))
-const totalConEnvio = computed(() => cart.total + envio.value)
+// Misma regla que CheckoutView: el sitio cobra solo los productos. El envío nunca se suma al total,
+// porque lo paga el cliente directo a la transportadora al recibir el pedido (o es gratis si recoge
+// en la tienda o si la compra supera $400.000). Antes el carrito sumaba $8.000 al total y no
+// coincidía con lo que después mostraba el pago.
+const envioGratis = computed(() => cart.total >= 400000)
 
 // ¿Nuestro equipo puede aplicar/instalar lo que llevas en el carrito?
 const serviciosSugeridos = computed(() => {
@@ -129,12 +132,14 @@ function irALogin() {
             <div class="carrito-resumen-row"><span>Subtotal</span><span>{{ formatCOP(cart.total) }}</span></div>
             <div class="carrito-resumen-row">
               <span>Envío</span>
-              <span>{{ envio === 0 ? 'Gratis' : formatCOP(envio) }}</span>
+              <span>{{ envioGratis ? 'Gratis' : 'Al recibir' }}</span>
             </div>
-            <p v-if="envio > 0" class="carrito-resumen-hint">
-              <i class="ri-truck-line"></i> Envío gratis en pedidos mayores a $400.000
+            <p class="carrito-resumen-hint">
+              <i class="ri-truck-line"></i>
+              <template v-if="envioGratis">Tu compra supera $400.000: el envío es gratis.</template>
+              <template v-else>El envío se paga aparte, directo a la transportadora al recibir el pedido. Es gratis si recoges en la tienda o si tu compra supera $400.000.</template>
             </p>
-            <div class="carrito-resumen-total"><span>Total</span><span class="value">{{ formatCOP(totalConEnvio) }}</span></div>
+            <div class="carrito-resumen-total"><span>Total</span><span class="value">{{ formatCOP(cart.total) }}</span></div>
             <button class="btn btn-primary btn-lg btn-block" @click="irACheckout">
               <i class="ri-lock-line"></i> Proceder al Pago
             </button>

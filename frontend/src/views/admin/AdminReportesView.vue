@@ -5,8 +5,8 @@
 // useReporteExport.js) y Word arma un documento de datos editable (docx), sin la gráfica.
 import { ref, computed } from 'vue'
 import { useCatalogStore } from '../../stores/catalog'
-import { useVentasStore } from '../../stores/ventas'
-import { formatCOP, formatDate } from '../../composables/useFormat'
+import { useVentasStore, cuentaComoVenta } from '../../stores/ventas'
+import { formatCOP, formatDate, fechaLocalISO } from '../../composables/useFormat'
 import { useReporteExport } from '../../composables/useReporteExport'
 import { useToast } from '../../composables/useToast'
 
@@ -27,7 +27,7 @@ const fechaMinima = computed(() => {
   const minTime = Math.min(...ventasStore.ventas.map((v) => new Date(v.fecha.replace(' ', 'T')).getTime()))
   return new Date(minTime)
 })
-function aISO(d) { return d.toISOString().slice(0, 10) }
+function aISO(d) { return fechaLocalISO(d) }
 
 // ── Filtro de rango de fechas ─────────────────────────────────
 const PRESETS = [
@@ -72,7 +72,8 @@ function enRango(fechaStr) {
 }
 
 // ── Ventas y detalle filtrados por el rango activo ────────────
-const ventasFiltradas = computed(() => ventasStore.ventas.filter((v) => enRango(v.fecha)))
+// Solo ventas efectivas: los pedidos cancelados o devueltos no suman dinero, pedidos ni unidades.
+const ventasFiltradas = computed(() => ventasStore.ventas.filter((v) => cuentaComoVenta(v) && enRango(v.fecha)))
 const idsVentasFiltradas = computed(() => new Set(ventasFiltradas.value.map((v) => v.id_venta)))
 const detalleFiltrado = computed(() => ventasStore.detalleVentas.filter((d) => idsVentasFiltradas.value.has(d.id_venta)))
 
@@ -263,7 +264,7 @@ const productosMasVendidos = computed(() => {
 // igual que "Vencida" en Cotizaciones — no existen como tal en el ENUM real de la BD. ──
 function estadoPromo(promo) {
   if (!promo.activo) return { label: 'Inactiva', clase: 'badge-gray' }
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = fechaLocalISO()
   if (promo.fecha_inicio && hoy < promo.fecha_inicio) return { label: 'Programada', clase: 'badge-blue' }
   if (promo.fecha_fin && hoy > promo.fecha_fin) return { label: 'Vencida', clase: 'badge-gray' }
   return { label: 'Vigente', clase: 'badge-green' }

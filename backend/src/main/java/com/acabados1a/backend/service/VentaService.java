@@ -135,6 +135,11 @@ public class VentaService {
         for (Map.Entry<Integer, Integer> entry : cantidadPorProducto.entrySet()) {
             Producto producto = productoRepository.findById(entry.getKey())
                 .orElseThrow(() -> new IllegalArgumentException("Uno de los productos indicados no existe."));
+            // Eliminar un producto es un borrado lógico (activo = false): ya no sale en el catálogo,
+            // pero sin esta validación se podía comprar entrando por su enlace directo.
+            if (Boolean.FALSE.equals(producto.getActivo())) {
+                throw new IllegalArgumentException("El producto \"" + producto.getNombre() + "\" ya no está disponible.");
+            }
             Inventario inventario = inventarioRepository.findByIdProducto(producto.getIdProducto())
                 .orElseThrow(() -> new IllegalArgumentException("El producto \"" + producto.getNombre() + "\" no tiene inventario registrado."));
             if (inventario.getCantidadDisponible() < entry.getValue()) {

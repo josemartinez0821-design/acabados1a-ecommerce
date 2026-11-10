@@ -7,6 +7,7 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useCatalogStore } from '../../stores/catalog'
 import { useToast } from '../../composables/useToast'
+import { fechaLocalISO } from '../../composables/useFormat'
 
 const catalog = useCatalogStore()
 const { showToast } = useToast()
@@ -29,7 +30,7 @@ const totalUnidades = computed(() => catalog.inventario.reduce((s, i) => s + i.c
 const totalStockBajo = computed(() => catalog.productos.filter((p) => estadoStock(p).value === 'stock_bajo').length)
 const totalAgotados = computed(() => catalog.productos.filter((p) => estadoStock(p).value === 'agotado').length)
 const movimientosHoy = computed(() => {
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = fechaLocalISO()
   return catalog.movimientosInventario.filter((m) => m.fecha.startsWith(hoy)).length
 })
 
@@ -66,7 +67,7 @@ const ultimos7Dias = computed(() => {
   for (let i = 6; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
-    dias.push(d.toISOString().slice(0, 10))
+    dias.push(fechaLocalISO(d))
   }
   return dias
 })

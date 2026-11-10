@@ -2,6 +2,15 @@ export function formatCOP(value) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value)
 }
 
+// Fecha YYYY-MM-DD en la hora LOCAL del navegador (Colombia, UTC-5). No usar
+// d.toISOString().slice(0, 10): toISOString() está en UTC y después de las 7:00 p. m. ya devuelve
+// el día siguiente («Ventas de hoy» en $0, gráficas corridas un día, promociones que vencen antes).
+// Las fechas del backend (LocalDateTime) también vienen en hora local, así que se comparan bien.
+export function fechaLocalISO(d = new Date()) {
+  const dia = new Date(d)
+  return `${dia.getFullYear()}-${String(dia.getMonth() + 1).padStart(2, '0')}-${String(dia.getDate()).padStart(2, '0')}`
+}
+
 export function formatDate(dateStr) {
   if (!dateStr) return '—'
   const d = new Date(dateStr + 'T00:00:00')

@@ -8,7 +8,7 @@ import { useCatalogStore } from '../../stores/catalog'
 import { useCotizacionesStore, unidadServicio } from '../../stores/cotizaciones'
 import { useVentasStore } from '../../stores/ventas'
 import { useToast } from '../../composables/useToast'
-import { formatCOP, formatDate, formatDateTime, extraerFechaDeseada, extraerNotaCliente } from '../../composables/useFormat'
+import { formatCOP, formatDate, formatDateTime, extraerFechaDeseada, extraerNotaCliente, fechaLocalISO } from '../../composables/useFormat'
 
 const catalog = useCatalogStore()
 const cotizStore = useCotizacionesStore()
@@ -290,7 +290,7 @@ const diasDelMes = computed(() => {
     dias.push({
       numero: d,
       fechaIso,
-      esHoy: fechaIso === hoy.toISOString().slice(0, 10),
+      esHoy: fechaIso === fechaLocalISO(hoy),
       confirmadas: citasDelDia.filter((c) => c.cot.estado === 'convertida_venta'),
       tentativas: citasDelDia.filter((c) => c.cot.estado === 'aprobada'),
     })
@@ -304,7 +304,7 @@ const proximasConfirmadas = computed(() => {
   const limite = new Date()
   limite.setDate(limite.getDate() + 7)
   return citasServicio.value
-    .filter((c) => c.cot.estado === 'convertida_venta' && new Date(c.fechaIso + 'T00:00:00') >= new Date(hoy.toISOString().slice(0, 10) + 'T00:00:00') && new Date(c.fechaIso + 'T00:00:00') <= limite)
+    .filter((c) => c.cot.estado === 'convertida_venta' && new Date(c.fechaIso + 'T00:00:00') >= new Date(fechaLocalISO(hoy) + 'T00:00:00') && new Date(c.fechaIso + 'T00:00:00') <= limite)
     .sort((a, b) => a.fechaIso.localeCompare(b.fechaIso))
 })
 

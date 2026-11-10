@@ -6,7 +6,7 @@ import { useCotizacionesStore } from '../../stores/cotizaciones'
 import { usePqrsStore } from '../../stores/pqrs'
 import { useVentasStore } from '../../stores/ventas'
 import { useCatalogStore } from '../../stores/catalog'
-import { extraerFechaDeseada } from '../../composables/useFormat'
+import { extraerFechaDeseada, fechaLocalISO } from '../../composables/useFormat'
 import { useCenterMessage } from '../../composables/useCenterMessage'
 import logoUrl from '../../assets/logo.png'
 
@@ -30,14 +30,14 @@ const iniciales = computed(() => {
 // caen en los próximos 7 días — así el admin lo ve apenas entra al panel, sin tener que ir a
 // buscarlo en el calendario de Cotizaciones.
 const citasProximas = computed(() => {
-  const hoy = new Date().toISOString().slice(0, 10)
+  const hoy = fechaLocalISO()
   const limite = new Date()
   limite.setDate(limite.getDate() + 7)
   return cotizStore.cotizaciones.filter((c) => {
     if (c.estado !== 'convertida_venta') return false
     const fechaIso = extraerFechaDeseada(c.observaciones)
     if (!fechaIso) return false
-    return fechaIso >= hoy && fechaIso <= limite.toISOString().slice(0, 10)
+    return fechaIso >= hoy && fechaIso <= fechaLocalISO(limite)
   }).length
 })
 

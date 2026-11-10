@@ -136,7 +136,7 @@ async function confirmarPago() {
     numero: venta.numero_venta,
     fecha: new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }),
     total: total.value,
-    metodo: metodoPago.value === 'tarjeta' ? `Tarjeta •••• ${tarjeta.numero.slice(-4) || '0000'}` : metodoPago.value,
+    metodo: metodoPago.value === 'tarjeta' ? `Tarjeta •••• ${tarjeta.numero.slice(-4) || '0000'}` : etiquetaMetodoPago(metodoPago.value),
     esEnvio: metodoEnvio.value === 'envio',
   }
   cart.vaciarCarrito()
@@ -152,6 +152,20 @@ async function confirmarPago() {
     }
   }
 }
+
+// Nombre para mostrar de cada valor del ENUM `metodo_pago` (antes la confirmación decía «nequi»).
+const NOMBRES_METODO_PAGO = { tarjeta: 'Tarjeta', nequi: 'Nequi', daviplata: 'Daviplata', transferencia: 'Transferencia / Consignación', efectivo: 'Efectivo', contraentrega: 'Contraentrega' }
+function etiquetaMetodoPago(valor) {
+  return NOMBRES_METODO_PAGO[valor] || valor
+}
+
+// Dirección del local (tabla configuracion) para cuando el cliente elige recoger en tienda.
+// La clave `direccion` ya trae el municipio («Carrera 5 No 6-31, Tesalia»): solo se agregan ciudad
+// y departamento si no vienen ya en el texto, para no mostrar «Tesalia, Tesalia».
+const direccionTienda = computed(() => {
+  const { direccion = '', ciudad, departamento } = catalog.configuracion
+  return [ciudad, departamento].filter((p) => p && !direccion.includes(p)).reduce((txt, p) => (txt ? `${txt}, ${p}` : p), direccion)
+})
 
 function reintentar() {
   resultado.value = null
@@ -200,6 +214,10 @@ function reintentar() {
             <template v-if="pedidoConfirmado.esEnvio">
               <p class="text-muted" style="font-size:0.78rem;margin-top:16px;">ENVÍO</p>
               <p>Se paga aparte, directo a la transportadora al recibir tu pedido.</p>
+            </template>
+            <template v-else>
+              <p class="text-muted" style="font-size:0.78rem;margin-top:16px;">RECOGIDA EN TIENDA</p>
+              <p>{{ direccionTienda }}<template v-if="catalog.configuracion.horario"> · {{ catalog.configuracion.horario }}</template></p>
             </template>
           </div>
 
@@ -381,8 +399,10 @@ function reintentar() {
                 </label>
 
                 <p class="text-muted mb-24" style="font-size:0.8rem;display:flex;align-items:center;gap:8px;margin-top:12px;">
-                  <i class="ri-shield-check-line text-primary"></i>
-                  <span>Tu información financiera está protegida con cifrado SSL de 256 bits.</span>
+                  <i class="ri-information-line text-primary"></i>
+                  <!-- Antes decía «protegida con cifrado SSL de 256 bits», que no es cierto en local (sin
+                       HTTPS) ni aplica a un pago simulado. La pasarela real (Wompi) está pendiente. -->
+                  <span>Pago simulado: no se realiza ningún cobro real. La pasarela de pagos se conectará al publicar la tienda.</span>
                 </p>
 
                 <div class="d-flex gap-12">
@@ -397,16 +417,22 @@ function reintentar() {
               <h2 class="font-main fw-800 mb-24" style="font-size:1.4rem;">Revisa tu pedido</h2>
 
               <div class="d-flex justify-between align-center mb-16">
-                <strong class="font-main"><i class="ri-map-pin-line text-primary"></i> Dirección de entrega</strong>
+                <strong class="font-main">
+                  <i :class="metodoEnvio === 'recogida' ? 'ri-store-2-line' : 'ri-map-pin-line'" class="text-primary"></i>
+                  {{ metodoEnvio === 'recogida' ? 'Recogida en tienda' : 'Dirección de entrega' }}
+                </strong>
                 <a href="#" class="text-primary" style="font-size:0.85rem;" @click.prevent="paso = 1">Editar</a>
               </div>
-              <p class="mb-24">{{ direccion.nombre }}<br />{{ direccion.direccionExacta }}<br />{{ direccion.ciudad }}, {{ direccion.departamento }}</p>
+              <!-- Con recogida en tienda se muestra el local, no la dirección del cliente (antes salía su
+                   dirección aunque el pedido no se iba a enviar). -->
+              <p v-if="metodoEnvio === 'recogida'" class="mb-24">{{ direccion.nombre }}<br />Recoges tu pedido en: {{ direccionTienda }}<template v-if="catalog.configuracion.horario"><br />{{ catalog.configuracion.horario }}</template></p>
+              <p v-else class="mb-24">{{ direccion.nombre }}<br />{{ direccion.direccionExacta }}<br />{{ direccion.ciudad }}, {{ direccion.departamento }}</p>
 
               <div class="d-flex justify-between align-center mb-16">
                 <strong class="font-main"><i class="ri-bank-card-line text-primary"></i> Método de pago</strong>
                 <a href="#" class="text-primary" style="font-size:0.85rem;" @click.prevent="paso = 2">Editar</a>
               </div>
-              <p class="mb-24" style="text-transform:capitalize;">{{ metodoPago === 'tarjeta' ? `Tarjeta terminada en ${tarjeta.numero.slice(-4) || '----'}` : metodoPago }}</p>
+              <p class="mb-24">{{ metodoPago === 'tarjeta' ? `Tarjeta terminada en ${tarjeta.numero.slice(-4) || '----'}` : etiquetaMetodoPago(metodoPago) }}</p>
 
               <strong class="font-main">Productos ({{ cart.cantidadTotal }})</strong>
               <div v-for="item in cart.items" :key="item.id_producto" class="cart-item">

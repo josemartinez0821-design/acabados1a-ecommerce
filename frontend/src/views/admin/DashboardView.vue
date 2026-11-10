@@ -4,10 +4,10 @@
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useCatalogStore } from '../../stores/catalog'
-import { useVentasStore } from '../../stores/ventas'
+import { useVentasStore, cuentaComoVenta } from '../../stores/ventas'
 import { useCotizacionesStore } from '../../stores/cotizaciones'
 import { usePqrsStore } from '../../stores/pqrs'
-import { formatCOP, formatDate, formatDateTime } from '../../composables/useFormat'
+import { formatCOP, formatDate, formatDateTime, fechaLocalISO } from '../../composables/useFormat'
 
 const auth = useAuthStore()
 const catalog = useCatalogStore()
@@ -42,8 +42,10 @@ const fechaReferencia = computed(() => {
   return new Date(maxTime)
 })
 
-const totalVentas = computed(() => ventasStore.ventas.reduce((sum, v) => sum + v.total, 0))
-const totalPedidos = computed(() => ventasStore.ventas.length)
+// Solo ventas efectivas: los pedidos cancelados o devueltos no suman ingresos ni pedidos.
+const ventasEfectivas = computed(() => ventasStore.ventas.filter(cuentaComoVenta))
+const totalVentas = computed(() => ventasEfectivas.value.reduce((sum, v) => sum + v.total, 0))
+const totalPedidos = computed(() => ventasEfectivas.value.length)
 const pqrsPendientes = computed(() => pqrsStore.pqrs.filter((p) => p.estado === 'abierto' || p.estado === 'en_proceso').length)
 
 // ── Gráfica de ventas — por día (últimos 30) o por mes (últimos 6), con curva suave y tooltip ──
@@ -78,7 +80,7 @@ const mesesVentana = computed(() => {
 })
 const totalesPorMes = computed(() =>
   mesesVentana.value.map(({ anio, mes }) =>
-    ventasStore.ventas
+    ventasEfectivas.value
       .filter((v) => {
         const d = new Date(v.fecha.replace(' ', 'T'))
         return d.getFullYear() === anio && d.getMonth() === mes
@@ -103,12 +105,12 @@ const diasVentana = computed(() => {
   for (let i = 29; i >= 0; i--) {
     const d = new Date(ref)
     d.setDate(d.getDate() - i)
-    dias.push(d.toISOString().slice(0, 10))
+    dias.push(fechaLocalISO(d))
   }
   return dias
 })
 const totalesPorDia = computed(() =>
-  diasVentana.value.map((dia) => ventasStore.ventas.filter((v) => v.fecha.startsWith(dia)).reduce((s, v) => s + v.total, 0))
+  diasVentana.value.map((dia) => ventasEfectivas.value.filter((v) => v.fecha.startsWith(dia)).reduce((s, v) => s + v.total, 0))
 )
 
 const valoresGrafica = computed(() => (modoGrafica.value === 'mes' ? totalesPorMes.value : totalesPorDia.value))
@@ -223,7 +225,9 @@ const stockBajo = computed(() => {
 // ── Productos más vendidos (real, desde detalle_ventas) ─────
 const productosMasVendidos = computed(() => {
   const totales = {}
+  const idsEfectivas = new Set(ventasEfectivas.value.map((v) => v.id_venta))
   ventasStore.detalleVentas.forEach((d) => {
+    if (!idsEfectivas.has(d.id_venta)) return
     totales[d.id_producto] = (totales[d.id_producto] || 0) + d.cantidad
   })
   const max = Math.max(...Object.values(totales), 1)

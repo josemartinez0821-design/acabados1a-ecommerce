@@ -130,6 +130,22 @@ class VentaServiceCrearRegresionTest {
         verify(emailService, never()).enviarConfirmacionPedido(anyString(), org.mockito.ArgumentMatchers.any());
     }
 
+    // Revisión pre-sustentación H1 (10/11/2026): un producto eliminado (borrado lógico) no sale en
+    // el catálogo, pero antes se podía comprar entrando por su enlace directo.
+    @Test
+    void productoEliminado_seRechazaSinInsertarNingunaVenta() {
+        producto.setActivo(false);
+        productoRepository.saveAndFlush(producto); // @Transactional lo revierte al terminar
+        long ventasAntes = contarVentas();
+
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+            () -> ventaService.crear(cliente.getEmail(), false, pedido("tarjeta", "recogida", item(producto, 1))));
+
+        assertEquals("El producto \"" + producto.getNombre() + "\" ya no está disponible.", e.getMessage());
+        assertEquals(ventasAntes, contarVentas(), "no debe quedar ninguna cabecera de venta insertada");
+        verify(emailService, never()).enviarConfirmacionPedido(anyString(), org.mockito.ArgumentMatchers.any());
+    }
+
     @Test
     void unClienteNoPuedeComprarANombreDeOtro() {
         Usuario otro = usuarioRepository.findAll().stream()

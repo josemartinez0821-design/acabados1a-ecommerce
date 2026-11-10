@@ -33,6 +33,13 @@ export function labelEstadoVenta(venta) {
   return ESTADOS_VENTA[venta.estado]?.label || venta.estado
 }
 
+// Un pedido cancelado o devuelto no es una venta: el stock volvió a Inventario y el pago quedó
+// reversado. Todos los totales de dinero, pedidos y unidades (Dashboard, Ventas, Reportes) cuentan
+// solo los pedidos que pasan este filtro; los conteos por estado siguen usando la lista completa.
+export function cuentaComoVenta(venta) {
+  return !['cancelado', 'devuelto'].includes(venta.estado)
+}
+
 export const useVentasStore = defineStore('ventas', () => {
   const ventas = ref([])
   const auth = useAuthStore()
