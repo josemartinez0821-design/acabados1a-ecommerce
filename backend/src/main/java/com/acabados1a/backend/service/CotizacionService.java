@@ -79,6 +79,11 @@ public class CotizacionService {
             for (CotizacionRequest.ItemProducto item : request.getProductos()) {
                 Producto producto = productoRepository.findById(item.getIdProducto())
                     .orElseThrow(() -> new IllegalArgumentException("Uno de los productos indicados no existe."));
+                // Borrado lógico: un producto eliminado no se cotiza (la clase es @Transactional,
+                // así que la cabecera ya guardada se deshace junto con esta excepción).
+                if (Boolean.FALSE.equals(producto.getActivo())) {
+                    throw new IllegalArgumentException("El producto \"" + producto.getNombre() + "\" ya no está disponible.");
+                }
                 CotizacionProducto cp = new CotizacionProducto();
                 cp.setCotizacion(guardada);
                 cp.setProducto(producto);
@@ -91,6 +96,9 @@ public class CotizacionService {
             for (CotizacionRequest.ItemServicio item : request.getServicios()) {
                 Servicio servicio = servicioRepository.findById(item.getIdServicio())
                     .orElseThrow(() -> new IllegalArgumentException("Uno de los servicios indicados no existe."));
+                if (Boolean.FALSE.equals(servicio.getActivo())) {
+                    throw new IllegalArgumentException("El servicio \"" + servicio.getNombreServicio() + "\" ya no está disponible.");
+                }
                 CotizacionServicio cs = new CotizacionServicio();
                 cs.setCotizacion(guardada);
                 cs.setServicio(servicio);

@@ -57,7 +57,12 @@ const queIncluye = computed(() => {
 
 const seCobraPorTiempo = computed(() => !!(servicio.value?.precio_hora || servicio.value?.precio_dia))
 
+// Un servicio eliminado (borrado lógico) no sale en el listado, pero su enlace directo sigue
+// abriendo esta página: no se deja cotizar (el backend también lo rechaza en CotizacionService).
+const servicioInactivo = computed(() => servicio.value?.activo === false)
+
 function solicitarCotizacion() {
+  if (servicioInactivo.value) return
   // Solo se arrastran a la cotización los datos que aplican a este servicio: las horas/días si
   // se cobra por tiempo, y el modo si tiene las dos modalidades (materiales incluidos o no).
   // En un servicio a precio fijo de proyecto, ninguno de los dos aplica.
@@ -237,7 +242,10 @@ function copiarEnlace() {
 
             <p class="text-muted" style="font-size:0.78rem;margin-bottom:20px;"><i class="ri-time-line"></i> {{ servicio.horario_atencion }}</p>
 
-            <button class="btn btn-primary btn-lg btn-block" @click="solicitarCotizacion">
+            <div v-if="servicioInactivo" class="alert alert-danger" style="margin-bottom:10px;">
+              <i class="ri-error-warning-line"></i> Este servicio ya no está disponible. Explora nuestros otros servicios.
+            </div>
+            <button class="btn btn-primary btn-lg btn-block" :disabled="servicioInactivo" @click="solicitarCotizacion">
               <i class="ri-file-list-line"></i> Solicitar Cotización
             </button>
             <a :href="`https://wa.me/${catalog.configuracion.whatsapp}`" target="_blank" rel="noopener" class="btn btn-outline-red btn-lg btn-block" style="margin-top:10px;">
