@@ -65,9 +65,9 @@ const aboutItems = [
 ]
 
 const testimonials = [
-  { stars: 5, text: '"Excelente servicio y productos de primera calidad. El equipo de Acabados 1A me asesoró perfectamente para elegir los colores de mi apartamento. Totalmente recomendados."', initials: 'CA', name: 'Carlos Andrés Gómez', role: 'Cliente — Pitalito, Huila' },
+  { stars: 5, text: '"Excelente servicio y productos de primera calidad. El equipo de Acabados 1A me asesoró perfectamente para elegir los colores de mi apartamento. Totalmente recomendados."', initials: 'CA', name: 'Carlos Andrés Gómez', role: 'Cliente — Tesalia, Huila' },
   { stars: 5, text: '"Compré pinturas y el servicio de instalación de Drywall. Quedé muy satisfecha con el resultado y con los precios. El trabajo fue impecable y terminaron antes de lo esperado."', initials: 'MF', name: 'María Fernanda López', role: 'Clienta — La Plata, Huila' },
-  { stars: 4, text: '"Muy buenos precios en estuco y Graniplast. El proceso de compra online fue sencillo y recibí mi pedido al día siguiente. Seguiré comprando aquí para mis obras."', initials: 'PV', name: 'Pedro Antonio Vargas', role: 'Contratista — Neiva, Huila' },
+  { stars: 4, text: '"Muy buenos precios en estuco y Graniplast. El proceso de compra online fue sencillo y recibí mi pedido al día siguiente. Seguiré comprando aquí para mis obras."', initials: 'PV', name: 'Pedro Antonio Vargas', role: 'Contratista — Paicol, Huila' },
   { stars: 5, text: '"La asesoría de diseño de interiores fue increíble. Me ayudaron a transformar completamente mi negocio con colores corporativos. 100% recomendados para proyectos empresariales."', initials: 'LR', name: 'Luisa Ramírez', role: 'Empresaria — Garzón, Huila' },
 ]
 
