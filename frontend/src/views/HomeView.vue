@@ -51,7 +51,7 @@ const serviceStrip = [
 const whyUs = [
   { icon: 'ri-medal-line', title: 'Calidad Certificada', desc: 'Trabajamos únicamente con marcas reconocidas como Pintuco, Sherwin-Williams y Corona, garantizando la mejor calidad.' },
   { icon: 'ri-user-star-line', title: 'Asesoría Experta', desc: 'Nuestro equipo de especialistas te guía para elegir el producto correcto según tu proyecto y presupuesto.' },
-  { icon: 'ri-truck-line', title: 'Entrega Rápida', desc: 'Hacemos entregas en Pitalito, Tesalia y municipios del suroccidente del Huila con tiempos de entrega de 24-48h.' },
+  { icon: 'ri-truck-line', title: 'Entrega Rápida', desc: 'Hacemos entregas en Tesalia y municipios cercanos, con tiempos de entrega de 24-48h.' },
   { icon: 'ri-price-tag-3-line', title: 'Precios Justos', desc: 'Ofrecemos precios competitivos y descuentos especiales para proyectos al por mayor y clientes frecuentes.' },
 ]
 
@@ -426,7 +426,7 @@ onMounted(animateCounters)
           <div style="width:60px;height:4px;background:var(--primary);margin:16px 0 20px;border-radius:2px;"></div>
           <p class="about-text" style="font-style:italic;color:var(--primary);font-weight:600;">"{{ catalog.configuracion.lema }}"</p>
           <p class="about-text">
-            Somos una empresa familiar especializada en la venta de materiales de acabados y diseño de interiores, ubicada en Tesalia, Huila. Atendemos a clientes de Pitalito, Neiva y todo el suroccidente colombiano.
+            Somos una empresa familiar especializada en la venta de materiales de acabados y diseño de interiores, ubicada en Tesalia, Huila. Atendemos a clientes de Tesalia y municipios cercanos.
           </p>
           <p class="about-text">
             Con más de 10 años de experiencia, ofrecemos pinturas, vinilos, materiales de construcción y servicios de instalación profesional, convirtiéndonos en el aliado estratégico de constructores, decoradores y hogares.
