@@ -272,7 +272,7 @@ const preguntasFrecuentes = computed(() => {
     ? 'Este producto está exento de IVA. El precio mostrado es el precio final.'
     : `El precio incluye ${impuesto ? impuesto.nombre : 'IVA'} según la tarifa vigente.`
   return [
-    { pregunta: '¿Cuánto tiempo demora la entrega?', respuesta: 'Las entregas en Tesalia y Pitalito se realizan en 24 horas hábiles. Para otros municipios del Huila el tiempo es de 24 a 48 horas.' },
+    { pregunta: '¿Cuánto tiempo demora la entrega?', respuesta: 'Las entregas en Tesalia se realizan en 24 horas hábiles. Para los municipios cercanos el tiempo es de 24 a 48 horas.' },
     { pregunta: '¿Puedo devolver el producto si no me satisface?', respuesta: 'Sí. Tienes 30 días desde la fecha de compra para solicitar un cambio si el producto está sin abrir y en perfectas condiciones.' },
     { pregunta: '¿El precio incluye IVA?', respuesta: ivaTexto },
     {

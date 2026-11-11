@@ -88,7 +88,7 @@ const imagenLightbox = ref(null)
             Somos una empresa familiar comprometida con dar color y belleza a tus obras y construcciones. Nos encargamos de la decoración de interiores y de todos los acabados que necesita tu proyecto, elaborando nuestros propios productos para garantizar su calidad y durabilidad.
           </p>
           <p class="about-text">
-            Con sede en Tesalia, Huila, y más de 10 años en el negocio, nuestro campo de cobertura llega hasta Pitalito, La Plata, Neiva y otros municipios del sur del Huila. Contamos con un equipo humano con la experiencia y el conocimiento para garantizarte un trabajo y unos productos de confianza.
+            Con sede en Tesalia, Huila, y más de 10 años en el negocio, atendemos a clientes de Tesalia y municipios cercanos. Contamos con un equipo humano con la experiencia y el conocimiento para garantizarte un trabajo y unos productos de confianza.
           </p>
           <div class="about-items">
             <div class="about-item" v-for="item in aboutItems" :key="item">
