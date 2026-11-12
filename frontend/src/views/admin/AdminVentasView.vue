@@ -6,10 +6,10 @@
 // Productos/Inventario/Cotizaciones.
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useCatalogStore } from '../../stores/catalog'
-import { useVentasStore, ESTADOS_VENTA, labelEstadoVenta } from '../../stores/ventas'
+import { useVentasStore, ESTADOS_VENTA, labelEstadoVenta, cuentaComoVenta } from '../../stores/ventas'
 import { useAuthStore } from '../../stores/auth'
 import { useToast } from '../../composables/useToast'
-import { formatCOP, formatDateTime, extraerDireccionEntrega, extraerNotaClienteVenta } from '../../composables/useFormat'
+import { formatCOP, formatDateTime, extraerDireccionEntrega, extraerNotaClienteVenta, fechaLocalISO } from '../../composables/useFormat'
 import api from '../../services/api'
 
 const catalog = useCatalogStore()
@@ -59,8 +59,10 @@ function puedeCancelarODevolver(venta) {
   return !['cancelado', 'devuelto'].includes(venta.estado)
 }
 
-const hoyStr = new Date().toISOString().slice(0, 10)
-const ventasHoy = computed(() => ventasStore.ventas.filter((v) => v.fecha.startsWith(hoyStr)))
+const hoyStr = fechaLocalISO()
+// Ingresos: solo ventas efectivas (los cancelados/devueltos no suman). Los conteos por estado de
+// abajo sí usan la lista completa.
+const ventasHoy = computed(() => ventasStore.ventas.filter((v) => cuentaComoVenta(v) && v.fecha.startsWith(hoyStr)))
 const totalVentasHoy = computed(() => ventasHoy.value.reduce((s, v) => s + v.total, 0))
 const totalEnProceso = computed(() => ventasStore.ventas.filter(esPedidoActivo).length)
 const totalEntregados = computed(() => ventasStore.ventas.filter((v) => v.estado === 'entregado').length)
@@ -79,16 +81,16 @@ const ultimos30Dias = computed(() => {
   for (let i = 29; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
-    dias.push(d.toISOString().slice(0, 10))
+    dias.push(fechaLocalISO(d))
   }
   return dias
 })
 const ventasDelPeriodo = computed(() => {
   const desde = ultimos30Dias.value[0]
-  return ventasStore.ventas.filter((v) => v.fecha.slice(0, 10) >= desde)
+  return ventasStore.ventas.filter((v) => cuentaComoVenta(v) && v.fecha.slice(0, 10) >= desde)
 })
 const totalesPorDia = computed(() =>
-  ultimos30Dias.value.map((dia) => ventasStore.ventas.filter((v) => v.fecha.startsWith(dia)).reduce((s, v) => s + v.total, 0))
+  ultimos30Dias.value.map((dia) => ventasDelPeriodo.value.filter((v) => v.fecha.startsWith(dia)).reduce((s, v) => s + v.total, 0))
 )
 const ingresosTotales30d = computed(() => totalesPorDia.value.reduce((s, v) => s + v, 0))
 const promedioDiario30d = computed(() => Math.round(ingresosTotales30d.value / 30))
@@ -371,7 +373,7 @@ function exportarCSV() {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `pedidos_${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `pedidos_${fechaLocalISO()}.csv`
   a.click()
   URL.revokeObjectURL(url)
   showToast('Reporte CSV descargado.', 'success')
@@ -810,7 +812,8 @@ async function guardarVentaManual() {
               <div style="display:flex;gap:8px;">
                 <select v-model="itemSeleccionado.id_producto" class="form-control" style="flex:2;">
                   <option value="" disabled>Selecciona un producto</option>
-                  <option v-for="p in catalog.productos" :key="p.id_producto" :value="p.id_producto">{{ p.nombre }} — {{ formatCOP(p.precio_venta) }}</option>
+                  <!-- Solo productos activos: uno eliminado (borrado lógico) ya no se puede vender (H1). -->
+                  <option v-for="p in catalog.productos.filter((x) => x.activo !== false)" :key="p.id_producto" :value="p.id_producto">{{ p.nombre }} — {{ formatCOP(p.precio_venta) }}</option>
                 </select>
                 <input v-model.number="itemSeleccionado.cantidad" type="number" min="1" class="form-control" style="flex:1;" />
                 <button type="button" class="btn btn-outline-red btn-sm" @click="agregarItemVenta"><i class="ri-add-line"></i></button>

@@ -101,6 +101,11 @@ const escalaImagen = computed(() => {
 
 const stock = computed(() => producto.value ? catalog.getProductStock(producto.value.id_producto) : 0)
 const stockStatus = computed(() => producto.value ? catalog.getStockStatus(producto.value.id_producto) : null)
+// Un producto eliminado (borrado lógico) no sale en el catálogo, pero su enlace directo sigue
+// abriendo esta página: se muestra como no disponible y no se deja comprar (el backend también
+// lo rechaza en VentaService).
+const productoInactivo = computed(() => producto.value?.activo === false)
+const sePuedeComprar = computed(() => !productoInactivo.value && stock.value > 0)
 
 const promoActiva = computed(() => producto.value ? catalog.getActivePromoForProduct(producto.value.id_producto) : null)
 
@@ -177,21 +182,26 @@ const serviciosSugeridos = computed(() => {
 })
 
 function agregarAlCarrito() {
-  if (stock.value === 0) {
-    showToast('Producto agotado', 'danger')
+  if (!sePuedeComprar.value) {
+    showToast(productoInactivo.value ? 'Este producto ya no está disponible' : 'Producto agotado', 'danger')
     return
   }
   cart.agregarProducto(producto.value, cantidad.value)
 }
 
 function comprarAhora() {
-  if (stock.value === 0) {
-    showToast('Producto agotado', 'danger')
+  if (!sePuedeComprar.value) {
+    showToast(productoInactivo.value ? 'Este producto ya no está disponible' : 'Producto agotado', 'danger')
     return
   }
   cart.agregarProducto(producto.value, cantidad.value)
   router.push('/checkout')
 }
+
+// Enlace de esta página para compartir (se recalcula al cambiar de variante, que cambia la URL).
+const urlProducto = computed(() => (producto.value ? `${window.location.origin}/productos/${producto.value.id_producto}` : window.location.href))
+const enlaceWhatsApp = computed(() => `https://wa.me/?text=${encodeURIComponent(`${producto.value?.nombre || ''} — ${urlProducto.value}`)}`)
+const enlaceFacebook = computed(() => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(urlProducto.value)}`)
 
 function copiarEnlace() {
   navigator.clipboard.writeText(window.location.href).then(() => showToast('Enlace copiado al portapapeles', 'success'))
@@ -262,7 +272,7 @@ const preguntasFrecuentes = computed(() => {
     ? 'Este producto está exento de IVA. El precio mostrado es el precio final.'
     : `El precio incluye ${impuesto ? impuesto.nombre : 'IVA'} según la tarifa vigente.`
   return [
-    { pregunta: '¿Cuánto tiempo demora la entrega?', respuesta: 'Las entregas en Tesalia y Pitalito se realizan en 24 horas hábiles. Para otros municipios del Huila el tiempo es de 24 a 48 horas.' },
+    { pregunta: '¿Cuánto tiempo demora la entrega?', respuesta: 'Las entregas en Tesalia se realizan en 24 horas hábiles. Para los municipios cercanos el tiempo es de 24 a 48 horas.' },
     { pregunta: '¿Puedo devolver el producto si no me satisface?', respuesta: 'Sí. Tienes 30 días desde la fecha de compra para solicitar un cambio si el producto está sin abrir y en perfectas condiciones.' },
     { pregunta: '¿El precio incluye IVA?', respuesta: ivaTexto },
     {
@@ -324,8 +334,10 @@ function toggleFaq(i) {
 
             <div class="detalle-share-bar">
               <span>Compartir:</span>
-              <a :href="`https://wa.me/?text=${encodeURIComponent(producto.nombre)}`" target="_blank" rel="noopener" class="detalle-share-btn whatsapp"><i class="ri-whatsapp-line"></i></a>
-              <a href="https://www.facebook.com/sharer/sharer.php" target="_blank" rel="noopener" class="detalle-share-btn facebook"><i class="ri-facebook-fill"></i></a>
+              <!-- Antes WhatsApp compartía solo el nombre y Facebook abría sharer.php sin ?u=, así que
+                   ninguno llevaba el enlace del producto. -->
+              <a :href="enlaceWhatsApp" target="_blank" rel="noopener" class="detalle-share-btn whatsapp" aria-label="Compartir por WhatsApp"><i class="ri-whatsapp-line"></i></a>
+              <a :href="enlaceFacebook" target="_blank" rel="noopener" class="detalle-share-btn facebook" aria-label="Compartir en Facebook"><i class="ri-facebook-fill"></i></a>
               <button type="button" class="btn btn-outline-red btn-sm" @click="copiarEnlace"><i class="ri-link"></i> Copiar enlace</button>
             </div>
           </div>
@@ -434,7 +446,14 @@ function toggleFaq(i) {
               </template>
             </div>
 
-            <div class="detalle-stock-box" :class="stockStatus.class">
+            <div v-if="productoInactivo" class="detalle-stock-box stock-out">
+              <span class="detalle-stock-dot"></span>
+              <div>
+                <div class="detalle-stock-text">Producto no disponible</div>
+                <div class="detalle-stock-hint" style="color: var(--danger);">Ya no hace parte de nuestro catálogo. Explora productos similares más abajo.</div>
+              </div>
+            </div>
+            <div v-else class="detalle-stock-box" :class="stockStatus.class">
               <span class="detalle-stock-dot"></span>
               <div>
                 <div class="detalle-stock-text">{{ stockStatus.label }} — {{ stock }} unidades disponibles</div>
@@ -452,14 +471,14 @@ function toggleFaq(i) {
             </div>
 
             <div class="d-flex" style="flex-direction:column;gap:12px;">
-              <button class="btn btn-primary btn-lg btn-block" :disabled="stock === 0" @click="agregarAlCarrito">
+              <button class="btn btn-primary btn-lg btn-block" :disabled="!sePuedeComprar" @click="agregarAlCarrito">
                 <i class="ri-shopping-cart-line"></i> Agregar al Carrito
               </button>
-              <button class="btn btn-dark btn-lg btn-block" :disabled="stock === 0" @click="comprarAhora">
+              <button class="btn btn-dark btn-lg btn-block" :disabled="!sePuedeComprar" @click="comprarAhora">
                 Comprar Ahora
               </button>
               <button
-                v-if="esFabricacionPropia"
+                v-if="esFabricacionPropia && !productoInactivo"
                 type="button"
                 class="btn btn-outline-red btn-lg btn-block"
                 @click="irACotizar({ tipo: 'producto', id: producto.id_producto, mayorista: true })"

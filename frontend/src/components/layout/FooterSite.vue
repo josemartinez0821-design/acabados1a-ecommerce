@@ -23,11 +23,11 @@ const catalog = useCatalogStore()
         <div>
           <h4 class="footer-title">Productos</h4>
           <div class="footer-links">
-            <RouterLink to="/productos?cat=1">Pinturas y Vinilos</RouterLink>
-            <RouterLink to="/productos?cat=2">Materiales de Acabado</RouterLink>
-            <RouterLink to="/productos?cat=3">Pegantes y Adhesivos</RouterLink>
-            <RouterLink to="/productos?cat=4">Drywall y PVC</RouterLink>
-            <RouterLink to="/productos?cat=5">Herramientas</RouterLink>
+            <!-- Se arman con las categorías reales de la BD (igual que HomeView): los id empiezan en 4,
+                 así que los enlaces fijos ?cat=1..5 de antes llevaban a categorías vacías o equivocadas. -->
+            <RouterLink v-for="cat in catalog.categorias" :key="cat.id_categoria" :to="`/productos?cat=${cat.id_categoria}`">
+              {{ cat.nombre }}
+            </RouterLink>
           </div>
         </div>
 

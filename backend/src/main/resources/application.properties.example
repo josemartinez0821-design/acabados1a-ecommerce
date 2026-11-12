@@ -50,3 +50,10 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 spring.mail.properties.mail.smtp.connectiontimeout=10000
 spring.mail.properties.mail.smtp.timeout=10000
 spring.mail.properties.mail.smtp.writetimeout=10000
+# Consola sin secretos: Hibernate imprime al arrancar la URL de conexión con usuario y contraseña
+# de la BD (línea "Database info"), y Spring avisa de un usuario en memoria que no se usa (la
+# autenticación es por JWT). Se silencian las dos para poder proyectar la consola sin exponer nada.
+logging.level.org.hibernate.orm.connections.pooling=WARN
+logging.level.org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration=ERROR
+# Mismo valor que Spring ya usaba por defecto (true); declararlo explícito solo quita el WARN del arranque.
+spring.jpa.open-in-view=true

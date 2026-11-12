@@ -51,7 +51,7 @@ const serviceStrip = [
 const whyUs = [
   { icon: 'ri-medal-line', title: 'Calidad Certificada', desc: 'Trabajamos únicamente con marcas reconocidas como Pintuco, Sherwin-Williams y Corona, garantizando la mejor calidad.' },
   { icon: 'ri-user-star-line', title: 'Asesoría Experta', desc: 'Nuestro equipo de especialistas te guía para elegir el producto correcto según tu proyecto y presupuesto.' },
-  { icon: 'ri-truck-line', title: 'Entrega Rápida', desc: 'Hacemos entregas en Pitalito, Tesalia y municipios del suroccidente del Huila con tiempos de entrega de 24-48h.' },
+  { icon: 'ri-truck-line', title: 'Entrega Rápida', desc: 'Hacemos entregas en Tesalia y municipios cercanos, con tiempos de entrega de 24-48h.' },
   { icon: 'ri-price-tag-3-line', title: 'Precios Justos', desc: 'Ofrecemos precios competitivos y descuentos especiales para proyectos al por mayor y clientes frecuentes.' },
 ]
 
@@ -65,9 +65,9 @@ const aboutItems = [
 ]
 
 const testimonials = [
-  { stars: 5, text: '"Excelente servicio y productos de primera calidad. El equipo de Acabados 1A me asesoró perfectamente para elegir los colores de mi apartamento. Totalmente recomendados."', initials: 'CA', name: 'Carlos Andrés Gómez', role: 'Cliente — Pitalito, Huila' },
+  { stars: 5, text: '"Excelente servicio y productos de primera calidad. El equipo de Acabados 1A me asesoró perfectamente para elegir los colores de mi apartamento. Totalmente recomendados."', initials: 'CA', name: 'Carlos Andrés Gómez', role: 'Cliente — Tesalia, Huila' },
   { stars: 5, text: '"Compré pinturas y el servicio de instalación de Drywall. Quedé muy satisfecha con el resultado y con los precios. El trabajo fue impecable y terminaron antes de lo esperado."', initials: 'MF', name: 'María Fernanda López', role: 'Clienta — La Plata, Huila' },
-  { stars: 4, text: '"Muy buenos precios en estuco y Graniplast. El proceso de compra online fue sencillo y recibí mi pedido al día siguiente. Seguiré comprando aquí para mis obras."', initials: 'PV', name: 'Pedro Antonio Vargas', role: 'Contratista — Neiva, Huila' },
+  { stars: 4, text: '"Muy buenos precios en estuco y Graniplast. El proceso de compra online fue sencillo y recibí mi pedido al día siguiente. Seguiré comprando aquí para mis obras."', initials: 'PV', name: 'Pedro Antonio Vargas', role: 'Contratista — Paicol, Huila' },
   { stars: 5, text: '"La asesoría de diseño de interiores fue increíble. Me ayudaron a transformar completamente mi negocio con colores corporativos. 100% recomendados para proyectos empresariales."', initials: 'LR', name: 'Luisa Ramírez', role: 'Empresaria — Garzón, Huila' },
 ]
 
@@ -426,7 +426,7 @@ onMounted(animateCounters)
           <div style="width:60px;height:4px;background:var(--primary);margin:16px 0 20px;border-radius:2px;"></div>
           <p class="about-text" style="font-style:italic;color:var(--primary);font-weight:600;">"{{ catalog.configuracion.lema }}"</p>
           <p class="about-text">
-            Somos una empresa familiar especializada en la venta de materiales de acabados y diseño de interiores, ubicada en Tesalia, Huila. Atendemos a clientes de Pitalito, Neiva y todo el suroccidente colombiano.
+            Somos una empresa familiar especializada en la venta de materiales de acabados y diseño de interiores, ubicada en Tesalia, Huila. Atendemos a clientes de Tesalia y municipios cercanos.
           </p>
           <p class="about-text">
             Con más de 10 años de experiencia, ofrecemos pinturas, vinilos, materiales de construcción y servicios de instalación profesional, convirtiéndonos en el aliado estratégico de constructores, decoradores y hogares.

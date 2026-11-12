@@ -67,7 +67,7 @@ const MAPA_EMBED_SRC = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d39
 
 // ── FAQ ──
 const FAQS = [
-  { icono: 'ri-truck-line', pregunta: '¿Hacen envíos a domicilio?', respuesta: 'Sí, realizamos envíos a Tesalia, Pitalito, La Plata, Neiva y municipios del suroccidente del Huila. El tiempo de entrega es de 24 a 48 horas hábiles.' },
+  { icono: 'ri-truck-line', pregunta: '¿Hacen envíos a domicilio?', respuesta: 'Sí, realizamos envíos a Tesalia y municipios cercanos. El tiempo de entrega es de 24 a 48 horas hábiles.' },
   { icono: 'ri-bank-card-line', pregunta: '¿Qué métodos de pago aceptan?', respuesta: 'Aceptamos efectivo, transferencia bancaria, Nequi, Daviplata y tarjetas débito/crédito.' },
   { icono: 'ri-file-list-line', pregunta: '¿Cómo solicito una cotización?', respuesta: 'Desde nuestra página de Cotizaciones, por WhatsApp, o completando este formulario indicando las medidas del área y los productos de interés. Respondemos en menos de 24 horas.' },
   { icono: 'ri-shield-check-line', pregunta: '¿Tienen garantía en los productos?', respuesta: 'Todos nuestros productos tienen garantía de 30 días por defectos de fábrica, además de la garantía propia de cada marca.' },
