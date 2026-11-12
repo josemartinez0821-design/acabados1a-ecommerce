@@ -1,10 +1,15 @@
 spring.application.name=backend
 
+# RA02 (12/11/2026): los secretos se leen de VARIABLES DE ENTORNO (lista en backend/.env.example).
+# Sintaxis ${VARIABLE:valor_por_defecto}: si la variable no existe se usa el valor de la derecha, que
+# aquí es solo un marcador. Así el mismo archivo sirve para desarrollo, pruebas y producción.
+server.port=${PORT:8080}
+
 # Base de datos real (acabadosydiseños1a24abril.sql), instancia MariaDB local.
-spring.datasource.url=jdbc:mariadb://localhost:3306/acabados_disenos_1a
+spring.datasource.url=${DB_URL:jdbc:mariadb://localhost:3306/acabados_disenos_1a}
 spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
-spring.datasource.username=root
-spring.datasource.password=CAMBIAR_POR_LA_CLAVE_REAL_LOCAL
+spring.datasource.username=${DB_USERNAME:root}
+spring.datasource.password=${DB_PASSWORD:CAMBIAR_POR_LA_CLAVE_REAL_LOCAL}
 
 # El esquema ya existe - Hibernate solo valida que las entidades @Entity coincidan con las tablas
 # reales, nunca crea ni altera nada.
@@ -22,23 +27,23 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.servlet.multipart.max-file-size=8MB
 spring.servlet.multipart.max-request-size=8MB
 
-# Secreto para firmar los JWT de sesión (HS256) - generar uno propio, nunca reusar este ejemplo.
+# Secreto para firmar los JWT de sesión (HS512 con una llave de 512 bits) - generar uno propio, nunca reusar este ejemplo.
 # Puede generarse con: openssl rand -base64 64
-jwt.secret=CAMBIAR_POR_UN_SECRETO_PROPIO_BASE64_DE_AL_MENOS_64_BYTES
-jwt.expiracion-horas=24
+jwt.secret=${JWT_SECRET:CAMBIAR_POR_UN_SECRETO_PROPIO_BASE64_DE_AL_MENOS_64_BYTES}
+jwt.expiracion-horas=${JWT_EXPIRACION_HORAS:24}
 
 # Llave del HMAC con que se guarda el código de verificación/recuperación de contraseña (en la BD
 # nunca queda el código en claro). Generar una propia, distinta de jwt.secret:
 # openssl rand -base64 48. Si se omite, el backend usa jwt.secret.
-codigo-verificacion.secret=CAMBIAR_POR_UNA_LLAVE_PROPIA
+codigo-verificacion.secret=${CODIGO_VERIFICACION_SECRET:CAMBIAR_POR_UNA_LLAVE_PROPIA}
 
 # Envío de correos (verificación de registro, recuperar contraseña) vía Gmail SMTP - la contraseña
 # es una "contraseña de aplicación" de Google (Cuenta de Google > Seguridad > Verificación en 2
 # pasos > Contraseñas de aplicaciones), nunca la contraseña real de la cuenta.
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=CAMBIAR_POR_EL_CORREO_REAL
-spring.mail.password=CAMBIAR_POR_LA_CONTRASENA_DE_APLICACION
+spring.mail.username=${MAIL_USERNAME:CAMBIAR_POR_EL_CORREO_REAL}
+spring.mail.password=${MAIL_PASSWORD:CAMBIAR_POR_LA_CONTRASENA_DE_APLICACION}
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 # Evita que un envío se quede colgado para siempre si Gmail no responde.

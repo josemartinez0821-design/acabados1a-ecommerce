@@ -54,6 +54,13 @@ npm run dev
 
 Por defecto apunta a `http://localhost:8080/api` (ver `frontend/.env`).
 
+### Despliegue, versiones y rollback
+
+El procedimiento completo (requisitos, configuración por variables de entorno, arranque, pruebas de
+humo y plan de rollback) está en [`docs/MANUAL_DESPLIEGUE.md`](docs/MANUAL_DESPLIEGUE.md). Las
+versiones desplegadas se marcan con etiquetas de versionamiento semántico (`git tag -l -n1`); los
+secretos van en variables de entorno (`backend/.env.example`), nunca en el repositorio.
+
 ## Flujo de trabajo con ramas
 
 Desde la auditoría cruzada (24/09/2026), ningún cambio va directo a `main`. Cada cambio se hace en

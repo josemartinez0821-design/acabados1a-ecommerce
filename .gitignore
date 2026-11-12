@@ -3,3 +3,17 @@
 
 # Configuración local del editor (VS Code) - no se comparte
 .vscode/
+
+# --- Política de configuración y datos (RA02 · despliegue, 12/11/2026) ---
+# Respaldo de protección a nivel raíz: aunque backend/ y frontend/ ya los excluyen, ningún archivo
+# con secretos o datos reales debe llegar a GitHub aunque se cree en otra carpeta.
+.env
+.env.*
+!.env.example
+**/application.properties
+**/application-*.properties
+!**/application.properties.example
+# Copias de respaldo de la base de datos: contienen datos personales de clientes (Ley 1581 de 2012)
+*.sql
+*.sql.gz
+respaldos/
